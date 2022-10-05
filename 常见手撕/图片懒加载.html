@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .container {
+        width: 80%;
+        margin: 20px auto;
+        background-color: darkblue;
+        box-shadow: 10px 10px 10px #fff;
+        border: 1px solid black;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+
+    }
+
+    .imgBox {
+        background-color: #fff;
+        width: 50%;
+        height: 350px;
+        margin-top: 30px;
+        transition: 2s ease-in-out;
+        opacity: 0;
+    }
+
+    .imgBox img {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+        transition: 2s ease-in-out;
+        opacity: 0;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <div class="imgBox">
+            <img src="./images/1.jpg">
+        </div>
+        <div class="imgBox">
+            <img src="./images/2.jpg">
+        </div>
+
+    </div>
+</body>
+<script>
+    //初始化显示两张图片，淡入淡出
+    document.querySelectorAll('.imgBox').forEach((box) => {
+        setTimeout(() => {
+            box.style.opacity = 1
+        }, 100);
+    })
+    document.querySelectorAll('.imgBox img').forEach((boxImg) => {
+        setTimeout(() => {
+            boxImg.style.opacity = 1
+        }, 100);
+    })
+
+    //常量
+    const baseUrl = "./images/";
+    var containerDom = document.getElementsByClassName('container')[0];
+
+    //创建imgDom和img元素
+    function createImg(targetDom, index) {
+        //创建图片容器
+        let imgBoxDom = document.createElement('div');
+        imgBoxDom.classList.add('imgBox');
+        //创建图片元素
+        let imgItem = document.createElement('img');
+        imgItem.setAttribute("data-src", baseUrl + index + '.jpg');
+
+        //添加到容器中
+        imgBoxDom.appendChild(imgItem);
+        targetDom.appendChild(imgBoxDom);
+        setTimeout(() => {
+            imgBoxDom.style.opacity = 1;
+        }, 100);
+    }
+    //图片懒加载，监听top和innerHeight距离实现
+    const imgLazyLoad = function (imgList) {
+        var count = 0
+        var length = imgList.length;
+        return function () {
+            let deleteIndexList = []
+            imgList.forEach((img, index) => {
+                let rect = img.getBoundingClientRect()
+                if (rect.top < window.innerHeight) {
+                    // img.style.opacity = 0;
+                    img.src = img.dataset.src
+                    // setTimeout(() => {
+                    //     img.style.opacity = 1;
+                    // }, 500);
+                    deleteIndexList.push(index)
+                    count++
+                    if (count === length) {
+                        document.removeEventListener('scroll', imgLazyLoad)
+                    }
+                }
+            })
+            imgList = imgList.filter((img, index) => !deleteIndexList.includes(index))
+        }
+
+    }
+    //异步加载图片容器
+    async function loadImgContainer() {
+        for (let i = 3; i <= 9; i++) {
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    createImg(containerDom, i);
+                    resolve();
+                }, 10 * i)
+            })
+        }
+    }
+    //监听图片容器
+    const observerImgs = new IntersectionObserver((changes) => {
+        // changes: 目标元素集合
+        changes.forEach((change) => {
+            // intersectionRatio
+            if (change.isIntersecting) {
+                const img = change.target;
+                img.src = img.dataset.src;
+                observerImgs.unobserve(img);
+                setTimeout(() => {
+                    img.style.opacity = 1;
+                }, 100);
+            }
+        });
+    });
+
+
+    //
+    loadImgContainer().then(() => {
+        let imgList = document.querySelectorAll('img');
+        // console.log(imgList);
+        imgList.forEach((imgItem, index) => {
+            if (index > 1) {
+                observerImgs.observe(imgItem);
+            }
+        })
+        // 这里最好加上防抖处理
+        //document.addEventListener('scroll', imgLazyLoad(imgList))
+    });
+
+</script>
+
+</html>

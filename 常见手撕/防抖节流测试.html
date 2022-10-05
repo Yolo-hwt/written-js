@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>防抖节流测试</title>
+</head>
+
+<body>
+    <h1 id="showNum">0</h1>
+    <hr>
+    <button id="myBtn">点击+1</button>
+    <button id="clear">清空</button>
+</body>
+<script>
+    var times = 0;
+    let btn = document.getElementById('myBtn');
+    let showH = document.getElementById('showNum');
+    let clearBtn = document.getElementById('clear');
+    function changeTime() {
+        times++;
+        showH.textContent = times;
+    }
+    //btn.onclick = debounce(changeTime, 1)
+    btn.onclick = throttle(changeTime, 1, true);
+    clearBtn.onclick = changeTime;
+
+    //防抖
+    function debounce(fn, wait, immediate = false) {
+        var ctx, args;
+        var timer;
+        const run = (timeout) => {
+            timer = setTimeout(() => {
+                if (!immediate) {
+                    fn.apply(ctx, args);
+                }
+                console.log('over');
+            }, timeout * 1000);
+        }
+        const clean = () => {
+            clearTimeout(timer);
+            timer = null;
+        }
+        return function () {
+            ctx = this;
+            args = arguments;
+            if (!timer) {
+                console.log('start');
+                if (immediate) {
+                    fn.apply(ctx, args);
+                }
+                run(wait);
+            } else {
+                console.log('reset');
+                clean(timer);
+                run(wait);
+            }
+        }
+    }
+
+    //节流
+    function throttle(fn, wait, immediate = false) {
+        var timer, ctx, args;
+        const clear = () => {
+            clearTimeout(timer);
+            timer = null;
+        }
+        const run = (timeout) => {
+            timer = setTimeout(() => {
+                if (!immediate) {
+                    console.log('excute');
+                    fn.apply(ctx, args)
+                }
+                clear();
+                console.log('over a turn');
+            }, timeout * 1000);
+        }
+        return function () {
+            ctx = this, args = arguments;
+            if (!timer) {
+                console.log('start a turn');
+                if (immediate) {
+                    fn.apply(ctx, args)
+                }
+                run(wait);
+            } else {
+                console.log('ignore');
+            }
+        }
+    }
+</script>
+
+</html>
