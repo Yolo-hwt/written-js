@@ -16,7 +16,6 @@ Object.create2 = function (proto, propertyObject) {
         for (const key of keys) {
             Object.defineProperty(obj, key + '', propertyObject[key]);
         }
-
     }
     return obj;
 }

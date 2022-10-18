@@ -46,7 +46,7 @@ function throttle_time(fn, wait) {
         args = arguments;
         let now = new Date().getTime();
         if (now - previous > wait) {
-            fn.apply(this, args);
+            fn.apply(context, args);
         }
         previous = now;
     }
